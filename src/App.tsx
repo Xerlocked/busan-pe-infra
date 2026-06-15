@@ -6,6 +6,9 @@ import { EnterprisePage } from '@/pages/EnterprisePage';
 import { CalculatorPage } from '@/pages/CalculatorPage';
 import { CsGuidePage } from '@/pages/CsGuidePage';
 import { CalendarPage } from '@/pages/CalendarPage';
+import { AdminLoginPage } from '@/pages/AdminLoginPage';
+import { AdminDashboard } from '@/pages/AdminDashboard';
+import { AdminRoute } from '@/components/admin/AdminRoute';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
 // Scroll to top on route change
@@ -31,6 +34,15 @@ function App() {
             <Route path="/calculator" element={<CalculatorPage />} />
             <Route path="/cs-guide" element={<CsGuidePage />} />
             <Route path="/calendar" element={<CalendarPage />} />
+            <Route path="/admin/login" element={<AdminLoginPage />} />
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
+              }
+            />
           </Routes>
         </Layout>
       </TooltipProvider>

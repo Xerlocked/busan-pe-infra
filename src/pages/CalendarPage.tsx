@@ -1,5 +1,6 @@
 import * as React from "react";
-import { jobPostings } from "@/data/jobPostings";
+import { fetchJobs } from "@/lib/api";
+import { type JobPosting } from "@/data/types";
 import { enterprises } from "@/data/enterprises";
 import { Timeline } from "@/components/calendar/Timeline";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -8,6 +9,30 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Filter } from "lucide-react";
 
 export function CalendarPage() {
+  const [jobPostings, setJobPostings] = React.useState<JobPosting[]>([]);
+
+  React.useEffect(() => {
+    fetchJobs().then(dbJobs => {
+      const mappedJobs: JobPosting[] = dbJobs.map(dbJob => {
+        const enterprise = enterprises.find(e => e.name === dbJob.InstitutionName || e.shortName === dbJob.InstitutionName);
+        return {
+          id: dbJob.NoticeID,
+          enterpriseId: enterprise?.id || dbJob.InstitutionName,
+          title: dbJob.Title,
+          recruitType: (dbJob.RecruitType as "신입" | "경력" | "무관") || "무관",
+          applicationStart: dbJob.RegistrationDate,
+          applicationEnd: dbJob.ClosingDate,
+          examDate: dbJob.ExamDate,
+          status: dbJob.Status,
+          headcount: dbJob.Headcount,
+          url: dbJob.OriginalPDFUrl,
+          notes: dbJob.Notes,
+        };
+      });
+      setJobPostings(mappedJobs);
+    }).catch(console.error);
+  }, []);
+
   const [selectedStatuses, setSelectedStatuses] = React.useState<Set<string>>(new Set(["접수중", "예정"]));
   const [selectedCategories, setSelectedCategories] = React.useState<Set<string>>(new Set(["금융", "에너지·SOC", "혁신도시"]));
 
@@ -35,12 +60,12 @@ export function CalendarPage() {
       if (!selectedStatuses.has(posting.status)) return false;
       
       // 2. 카테고리 필터 적용
-      const enterprise = enterprises.find(e => e.id === posting.enterpriseId);
+      const enterprise = enterprises.find(e => e.id === posting.enterpriseId || e.name === posting.enterpriseId);
       if (enterprise && !selectedCategories.has(enterprise.category)) return false;
 
       return true;
     });
-  }, [selectedStatuses, selectedCategories]);
+  }, [jobPostings, selectedStatuses, selectedCategories]);
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-6xl">

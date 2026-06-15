@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { Calendar, ChevronRight } from "lucide-react";
-import { jobPostings } from "@/data/jobPostings";
+import { fetchJobs, JobPostingDB } from "@/lib/api";
 import { enterprises } from "@/data/enterprises";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,18 +9,15 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export function TimelineFeed() {
-  const recentPostings = [...jobPostings]
-    .sort((a, b) => new Date(b.applicationStart).getTime() - new Date(a.applicationStart).getTime())
-    .slice(0, 4);
+  const [jobPostings, setJobPostings] = React.useState<JobPostingDB[]>([]);
 
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case "접수중": return "default";
-      case "예정": return "secondary";
-      case "마감": return "outline";
-      default: return "default";
-    }
-  };
+  React.useEffect(() => {
+    fetchJobs().then(setJobPostings).catch(console.error);
+  }, []);
+
+  const recentPostings = [...jobPostings]
+    .sort((a, b) => new Date(b.RegistrationDate).getTime() - new Date(a.RegistrationDate).getTime())
+    .slice(0, 4);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -48,9 +45,9 @@ export function TimelineFeed() {
 
         <div className="relative border-l border-border pl-6 space-y-8 ml-3 md:ml-0 md:pl-8">
           {recentPostings.map((posting) => {
-            const enterprise = enterprises.find(e => e.id === posting.enterpriseId);
+            const enterprise = enterprises.find(e => e.name === posting.InstitutionName || e.shortName === posting.InstitutionName);
             return (
-              <div key={posting.id} className="relative">
+              <div key={posting.NoticeID} className="relative">
                 {/* Timeline node */}
                 <div className="absolute -left-[31px] md:-left-[39px] top-4 w-4 h-4 rounded-full border-2 border-background bg-primary ring-2 ring-primary/20" />
                 
@@ -59,23 +56,23 @@ export function TimelineFeed() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-sm font-medium text-primary bg-primary/10 px-2 py-0.5 rounded">
-                          {enterprise?.shortName || "공기업"}
+                          {enterprise?.shortName || posting.InstitutionName || "공기업"}
                         </span>
-                        <Badge variant="outline" className={cn("border-0", getStatusColor(posting.status))}>
-                          {posting.status}
+                        <Badge variant="outline" className={cn("border-0", getStatusColor(posting.Status))}>
+                          {posting.Status}
                         </Badge>
                       </div>
                       <h3 className="text-lg font-bold group-hover:text-primary transition-colors line-clamp-1">
-                        {posting.title}
+                        {posting.Title}
                       </h3>
                       <div className="flex items-center text-sm text-muted-foreground mt-2">
                         <Calendar className="w-4 h-4 mr-1.5" />
-                        {posting.applicationStart} ~ {posting.applicationEnd}
+                        {posting.RegistrationDate} ~ {posting.ClosingDate}
                       </div>
                     </div>
-                    {posting.url && (
+                    {posting.OriginalPDFUrl && (
                       <Button variant="secondary" size="sm" asChild className="w-full md:w-auto shrink-0">
-                        <a href={posting.url} target="_blank" rel="noreferrer">
+                        <a href={posting.OriginalPDFUrl} target="_blank" rel="noreferrer">
                           공고 보기
                         </a>
                       </Button>

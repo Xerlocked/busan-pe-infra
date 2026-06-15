@@ -1,11 +1,17 @@
 import * as React from "react";
 import { Building2, Briefcase, Award, BookOpen } from "lucide-react";
 import { enterprises } from "@/data/enterprises";
-import { jobPostings } from "@/data/jobPostings";
 import { certificates } from "@/data/certificates";
 import { csSubjects } from "@/data/csSubjects";
+import { fetchJobs, JobPostingDB } from "@/lib/api";
 
 export function QuickStats() {
+  const [jobPostings, setJobPostings] = React.useState<JobPostingDB[]>([]);
+
+  React.useEffect(() => {
+    fetchJobs().then(setJobPostings).catch(console.error);
+  }, []);
+
   const stats = [
     { label: "수록 기업", value: enterprises.length, icon: Building2 },
     { label: "채용 공고", value: jobPostings.length, icon: Briefcase },
