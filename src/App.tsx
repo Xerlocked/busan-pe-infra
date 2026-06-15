@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { HomePage } from '@/pages/HomePage';
 import { EnterprisePage } from '@/pages/EnterprisePage';
@@ -24,7 +24,7 @@ function ScrollToTop() {
 
 function App() {
   return (
-    <HashRouter>
+    <BrowserRouter>
       <ScrollToTop />
       <TooltipProvider delayDuration={300}>
         <Layout>
@@ -46,7 +46,7 @@ function App() {
           </Routes>
         </Layout>
       </TooltipProvider>
-    </HashRouter>
+    </BrowserRouter>
   );
 }
 
