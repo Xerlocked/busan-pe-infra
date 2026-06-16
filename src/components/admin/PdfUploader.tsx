@@ -16,6 +16,7 @@ export function PdfUploader({ onParsed, isLoading }: PdfUploaderProps) {
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
   const [error, setError] = React.useState('');
   const [progress, setProgress] = React.useState(0);
+  const [progressMessage, setProgressMessage] = React.useState('대기 중...');
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleFile = async (file: File) => {
@@ -27,30 +28,21 @@ export function PdfUploader({ onParsed, isLoading }: PdfUploaderProps) {
     setSelectedFile(file);
     setError('');
     setProgress(0);
-
-    // Simulate progress for UX (parsing happens server-side)
-    const progressInterval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 90) {
-          clearInterval(progressInterval);
-          return 90;
-        }
-        return prev + Math.random() * 15;
-      });
-    }, 500);
+    setProgressMessage('시작하는 중...');
 
     try {
-      const result = await parsePdf(file);
-      clearInterval(progressInterval);
-      setProgress(100);
-
+      const result = await parsePdf(file, (status, percentage) => {
+        setProgressMessage(status);
+        setProgress(percentage);
+      });
+      
       // Brief delay to show 100% before transitioning
       setTimeout(() => {
         onParsed(result);
-      }, 300);
+      }, 500);
     } catch (err) {
-      clearInterval(progressInterval);
       setProgress(0);
+      setProgressMessage('');
       setError(err instanceof Error ? err.message : 'PDF 파싱 중 오류가 발생했습니다.');
     }
   };
@@ -126,10 +118,10 @@ export function PdfUploader({ onParsed, isLoading }: PdfUploaderProps) {
                 <div className="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin" />
               </div>
               <p className="text-lg font-semibold text-foreground mb-1">
-                AI가 PDF를 분석하고 있습니다...
+                {progressMessage}
               </p>
               <p className="text-sm text-muted-foreground mb-4">
-                LLM이 채용공고를 구조화된 데이터로 변환합니다
+                S3 업로드 및 AI 처리를 진행하고 있습니다
               </p>
               {/* Progress bar */}
               <div className="w-full max-w-xs h-2 bg-muted rounded-full overflow-hidden">

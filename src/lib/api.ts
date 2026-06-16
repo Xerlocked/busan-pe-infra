@@ -103,17 +103,48 @@ export async function fetchJob(id: string): Promise<JobPostingDB> {
 // Admin API — Requires Authentication
 // ═══════════════════════════════════════
 
-export async function parsePdf(file: File): Promise<ParsedJobData> {
-  const formData = new FormData();
-  formData.append('file', file);
-
-  const response = await fetch(`${API_BASE_URL}/api/admin/parse-pdf`, {
+export async function parsePdf(file: File, onProgress?: (status: string, percentage: number) => void): Promise<ParsedJobData> {
+  // 1. Get Presigned URL
+  onProgress?.('업로드 주소 요청 중...', 10);
+  const uploadUrlResponse = await fetch(`${API_BASE_URL}/api/admin/upload-url`, {
     method: 'POST',
-    headers: authHeaders(),
-    body: formData,
+    headers: {
+      ...authHeaders(),
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ filename: file.name }),
+  });
+  
+  const uploadData = await handleResponse<{uploadUrl: string, s3Key: string}>(uploadUrlResponse);
+  
+  // 2. Upload directly to S3
+  onProgress?.('S3에 파일 업로드 중...', 30);
+  const s3Response = await fetch(uploadData.uploadUrl, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/pdf',
+    },
+    body: file,
   });
 
-  return handleResponse<ParsedJobData>(response);
+  if (!s3Response.ok) {
+    throw new Error('S3 파일 업로드에 실패했습니다.');
+  }
+
+  // 3. Call parse-pdf with S3 Key
+  onProgress?.('AI가 문서를 분석 중입니다 (최대 15쪽)...', 60);
+  const response = await fetch(`${API_BASE_URL}/api/admin/parse-pdf?upload=true`, {
+    method: 'POST',
+    headers: {
+      ...authHeaders(),
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ s3Key: uploadData.s3Key }),
+  });
+
+  const result = await handleResponse<ParsedJobData>(response);
+  onProgress?.('분석 완료!', 100);
+  return result;
 }
 
 export async function createJob(data: JobPostingDB): Promise<JobPostingDB> {
