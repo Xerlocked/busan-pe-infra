@@ -11,12 +11,13 @@ interface PdfUploaderProps {
   isLoading: boolean;
 }
 
-export function PdfUploader({ onParsed, isLoading }: PdfUploaderProps) {
+export function PdfUploader({ onParsed, isLoading: _externalIsLoading }: PdfUploaderProps) {
   const [isDragOver, setIsDragOver] = React.useState(false);
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
   const [error, setError] = React.useState('');
   const [progress, setProgress] = React.useState(0);
   const [progressMessage, setProgressMessage] = React.useState('대기 중...');
+  const [isProcessing, setIsProcessing] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleFile = async (file: File) => {
@@ -29,6 +30,7 @@ export function PdfUploader({ onParsed, isLoading }: PdfUploaderProps) {
     setError('');
     setProgress(0);
     setProgressMessage('시작하는 중...');
+    setIsProcessing(true);
 
     try {
       const result = await parsePdf(file, (status, percentage) => {
@@ -38,11 +40,13 @@ export function PdfUploader({ onParsed, isLoading }: PdfUploaderProps) {
       
       // Brief delay to show 100% before transitioning
       setTimeout(() => {
+        setIsProcessing(false);
         onParsed(result);
       }, 500);
     } catch (err) {
       setProgress(0);
       setProgressMessage('');
+      setIsProcessing(false);
       setError(err instanceof Error ? err.message : 'PDF 파싱 중 오류가 발생했습니다.');
     }
   };
@@ -98,7 +102,7 @@ export function PdfUploader({ onParsed, isLoading }: PdfUploaderProps) {
           isDragOver
             ? 'border-primary bg-primary/5 scale-[1.01]'
             : 'border-border/50 hover:border-primary/50 hover:bg-primary/5',
-          isLoading && 'pointer-events-none opacity-60'
+          isProcessing && 'pointer-events-none opacity-60'
         )}
         onClick={() => fileInputRef.current?.click()}
       >
@@ -111,7 +115,7 @@ export function PdfUploader({ onParsed, isLoading }: PdfUploaderProps) {
         />
 
         <div className="flex flex-col items-center justify-center py-16 px-6">
-          {isLoading ? (
+          {isProcessing ? (
             <>
               {/* Loading State */}
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
