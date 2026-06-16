@@ -2,7 +2,8 @@
 // API Client — PIA Admin Dashboard
 // ═══════════════════════════════════════
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+export const PARSE_PDF_URL = import.meta.env.VITE_PARSE_PDF_URL || `${API_BASE_URL}/api/admin/parse-pdf`;
 
 // ═══════════════════════════════════════
 // TypeScript Interfaces
@@ -133,7 +134,7 @@ export async function parsePdf(file: File, onProgress?: (status: string, percent
 
   // 3. Call parse-pdf with S3 Key
   onProgress?.('AI가 문서를 분석 중입니다 (최대 15쪽)...', 60);
-  const response = await fetch(`${API_BASE_URL}/api/admin/parse-pdf?upload=true`, {
+  const response = await fetch(`${PARSE_PDF_URL}?upload=true`, {
     method: 'POST',
     headers: {
       ...authHeaders(),
