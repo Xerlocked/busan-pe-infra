@@ -77,7 +77,8 @@ async function handleResponse<T>(response: Response): Promise<T> {
     let message = `API 오류: ${response.status}`;
     try {
       const body = await response.json();
-      if (body.message) message = body.message;
+      if (body.error) message = body.error;
+      else if (body.message) message = body.message;
     } catch {
       // ignore JSON parse errors
     }
