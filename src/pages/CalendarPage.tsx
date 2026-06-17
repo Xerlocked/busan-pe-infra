@@ -15,6 +15,12 @@ export function CalendarPage() {
     fetchJobs().then(dbJobs => {
       const mappedJobs: JobPosting[] = dbJobs.map(dbJob => {
         const enterprise = enterprises.find(e => e.name === dbJob.InstitutionName || e.shortName === dbJob.InstitutionName);
+        
+        let status = dbJob.Status as "접수중" | "예정" | "마감";
+        if (dbJob.Status === "접수예정") status = "예정";
+        if (dbJob.Status === "접수마감") status = "마감";
+        if (dbJob.Status === "진행중") status = "접수중";
+
         return {
           id: dbJob.NoticeID,
           enterpriseId: enterprise?.id || dbJob.InstitutionName,
@@ -23,7 +29,7 @@ export function CalendarPage() {
           applicationStart: dbJob.RegistrationDate,
           applicationEnd: dbJob.ClosingDate,
           examDate: dbJob.ExamDate,
-          status: dbJob.Status,
+          status: status,
           headcount: dbJob.Headcount,
           url: dbJob.OriginalPDFUrl,
           notes: dbJob.Notes,
