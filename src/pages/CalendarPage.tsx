@@ -12,38 +12,44 @@ export function CalendarPage() {
   const [jobPostings, setJobPostings] = React.useState<JobPosting[]>([]);
 
   React.useEffect(() => {
-    fetchJobs().then(dbJobs => {
-      const mappedJobs: JobPosting[] = dbJobs.map(dbJob => {
-        const enterprise = enterprises.find(e => e.name === dbJob.InstitutionName || e.shortName === dbJob.InstitutionName);
-        
-        let status = dbJob.Status as "접수중" | "예정" | "마감";
-        if (dbJob.Status === "접수예정") status = "예정";
-        if (dbJob.Status === "접수마감") status = "마감";
-        if (dbJob.Status === "진행중") status = "접수중";
+    fetchJobs()
+      .then((dbJobs) => {
+        const mappedJobs: JobPosting[] = dbJobs.map((dbJob) => {
+          const enterprise = enterprises.find(
+            (e) =>
+              e.name === dbJob.InstitutionName ||
+              e.shortName === dbJob.InstitutionName,
+          );
 
-        return {
-          id: dbJob.NoticeID,
-          enterpriseId: enterprise?.id || dbJob.InstitutionName,
-          title: dbJob.Title,
-          recruitType: (dbJob.RecruitType as "신입" | "경력" | "무관") || "무관",
-          applicationStart: dbJob.RegistrationDate,
-          applicationEnd: dbJob.ClosingDate,
-          examDate: dbJob.ExamDate,
-          status: status,
-          headcount: dbJob.Headcount,
-          url: dbJob.OriginalPDFUrl,
-          notes: dbJob.Notes,
-        };
-      });
-      setJobPostings(mappedJobs);
-    }).catch(console.error);
+          return {
+            id: dbJob.NoticeID,
+            enterpriseId: enterprise?.id || dbJob.InstitutionName,
+            title: dbJob.Title,
+            recruitType:
+              (dbJob.RecruitType as "신입" | "경력" | "무관") || "무관",
+            applicationStart: dbJob.RegistrationDate,
+            applicationEnd: dbJob.ClosingDate,
+            examDate: dbJob.ExamDate,
+            status: dbJob.Status,
+            headcount: dbJob.Headcount,
+            url: dbJob.OriginalPDFUrl,
+            notes: dbJob.Notes,
+          };
+        });
+        setJobPostings(mappedJobs);
+      })
+      .catch(console.error);
   }, []);
 
-  const [selectedStatuses, setSelectedStatuses] = React.useState<Set<string>>(new Set(["접수중", "예정"]));
-  const [selectedCategories, setSelectedCategories] = React.useState<Set<string>>(new Set(["금융", "에너지·SOC", "혁신도시"]));
+  const [selectedStatuses, setSelectedStatuses] = React.useState<Set<string>>(
+    new Set(["접수중", "예정"]),
+  );
+  const [selectedCategories, setSelectedCategories] = React.useState<
+    Set<string>
+  >(new Set(["금융", "에너지·SOC", "혁신도시"]));
 
   const toggleStatus = (status: string) => {
-    setSelectedStatuses(prev => {
+    setSelectedStatuses((prev) => {
       const next = new Set(prev);
       if (next.has(status)) next.delete(status);
       else next.add(status);
@@ -52,7 +58,7 @@ export function CalendarPage() {
   };
 
   const toggleCategory = (category: string) => {
-    setSelectedCategories(prev => {
+    setSelectedCategories((prev) => {
       const next = new Set(prev);
       if (next.has(category)) next.delete(category);
       else next.add(category);
@@ -61,13 +67,16 @@ export function CalendarPage() {
   };
 
   const filteredPostings = React.useMemo(() => {
-    return jobPostings.filter(posting => {
+    return jobPostings.filter((posting) => {
       // 1. 상태 필터 적용
       if (!selectedStatuses.has(posting.status)) return false;
-      
+
       // 2. 카테고리 필터 적용
-      const enterprise = enterprises.find(e => e.id === posting.enterpriseId || e.name === posting.enterpriseId);
-      if (enterprise && !selectedCategories.has(enterprise.category)) return false;
+      const enterprise = enterprises.find(
+        (e) => e.id === posting.enterpriseId || e.name === posting.enterpriseId,
+      );
+      if (enterprise && !selectedCategories.has(enterprise.category))
+        return false;
 
       return true;
     });
@@ -80,7 +89,8 @@ export function CalendarPage() {
           채용 캘린더
         </h1>
         <p className="text-lg text-muted-foreground">
-          부울경 전산직 하반기 채용 일정.<br />
+          부울경 전산직 하반기 채용 일정.
+          <br />
           원하는 기업과 상태를 필터링하여 일정을 관리하세요.
         </p>
       </div>
@@ -97,16 +107,21 @@ export function CalendarPage() {
 
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-sm font-semibold mb-3 text-muted-foreground">진행 상태</h3>
+                  <h3 className="text-sm font-semibold mb-3 text-muted-foreground">
+                    진행 상태
+                  </h3>
                   <div className="space-y-3">
-                    {["접수중", "예정", "마감"].map(status => (
+                    {["접수중", "예정", "마감"].map((status) => (
                       <div key={status} className="flex items-center space-x-2">
-                        <Checkbox 
-                          id={`status-${status}`} 
+                        <Checkbox
+                          id={`status-${status}`}
                           checked={selectedStatuses.has(status)}
                           onCheckedChange={() => toggleStatus(status)}
                         />
-                        <Label htmlFor={`status-${status}`} className="cursor-pointer text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                        <Label
+                          htmlFor={`status-${status}`}
+                          className="cursor-pointer text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
                           {status}
                         </Label>
                       </div>
@@ -115,16 +130,24 @@ export function CalendarPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-semibold mb-3 text-muted-foreground">기업 구분</h3>
+                  <h3 className="text-sm font-semibold mb-3 text-muted-foreground">
+                    기업 구분
+                  </h3>
                   <div className="space-y-3">
-                    {["금융", "에너지·SOC", "혁신도시"].map(category => (
-                      <div key={category} className="flex items-center space-x-2">
-                        <Checkbox 
-                          id={`cat-${category}`} 
+                    {["금융", "에너지·SOC", "혁신도시"].map((category) => (
+                      <div
+                        key={category}
+                        className="flex items-center space-x-2"
+                      >
+                        <Checkbox
+                          id={`cat-${category}`}
                           checked={selectedCategories.has(category)}
                           onCheckedChange={() => toggleCategory(category)}
                         />
-                        <Label htmlFor={`cat-${category}`} className="cursor-pointer text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                        <Label
+                          htmlFor={`cat-${category}`}
+                          className="cursor-pointer text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
                           {category}
                         </Label>
                       </div>
