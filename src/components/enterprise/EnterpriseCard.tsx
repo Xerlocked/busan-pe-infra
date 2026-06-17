@@ -19,7 +19,23 @@ export function EnterpriseCard({ enterprise }: { enterprise: Enterprise }) {
           <span className="text-sm font-bold text-muted-foreground">{enterprise.shortName}</span>
         </div>
         <h3 className="text-xl font-bold leading-tight group-hover:text-primary transition-colors">{enterprise.name}</h3>
-        <div className="flex items-center text-sm text-muted-foreground mt-2">
+        
+        {(enterprise.ministry || enterprise.orgType) && (
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {enterprise.ministry && (
+              <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                {enterprise.ministry}
+              </span>
+            )}
+            {enterprise.orgType && (
+              <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20">
+                {enterprise.orgType}
+              </span>
+            )}
+          </div>
+        )}
+
+        <div className="flex items-center text-sm text-muted-foreground mt-3">
           <MapPin className="w-4 h-4 mr-1 shrink-0" />
           <span className="truncate">{enterprise.location}</span>
         </div>

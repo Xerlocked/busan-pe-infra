@@ -7,7 +7,7 @@ interface CategoryFilterProps {
 }
 
 export function CategoryFilter({ activeCategory, onCategoryChange }: CategoryFilterProps) {
-  const categories = ["전체", "금융", "에너지·SOC", "혁신도시"];
+  const categories = ["전체", "금융", "에너지·SOC", "혁신도시", "기타"];
 
   return (
     <div className="w-full overflow-x-auto pb-4 hide-scrollbar">

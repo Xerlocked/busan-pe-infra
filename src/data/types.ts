@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════
 // 1. 공기업 데이터 타입
 // ═══════════════════════════════════════
-export type EnterpriseCategory = "금융" | "에너지·SOC" | "혁신도시";
+export type EnterpriseCategory = "금융" | "에너지·SOC" | "혁신도시" | "기타";
 
 export interface Enterprise {
   id: string;
@@ -14,6 +14,8 @@ export interface Enterprise {
   jobCharacteristics: string[];
   certBonusNote?: string;
   website?: string;
+  ministry?: string; // 주무부처
+  orgType?: string;  // 기관유형
 }
 
 // ═══════════════════════════════════════
